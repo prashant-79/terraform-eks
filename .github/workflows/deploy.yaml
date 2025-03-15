@@ -58,6 +58,7 @@ jobs:
         environment: [dev]
     defaults:
       run:
+        shell: bash
         working-directory: ${{ matrix.name }}
     steps:
       - name: Checkout repository
