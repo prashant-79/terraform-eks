@@ -1,0 +1,89 @@
+name: EKS Terraform Deployment
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'vpc/**'
+      - 'acm/**'
+      - 'eks/**'
+      - 'monitoring/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'vpc/**'
+      - 'acm/**'
+      - 'eks/**'
+      - 'monitoring/**'
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: us-east-1
+
+jobs:
+  changes:
+    name: Find Changes
+    runs-on: ubuntu-latest
+    outputs:
+      names: ${{ steps.filter.outputs.changes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Find Changes
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            vpc:
+              - 'vpc/**'
+            acm:
+              - 'acm/**'
+            eks:
+              - 'eks/**'
+            monitoring:
+              - 'monitoring/**'
+
+  terraform:
+    needs: changes
+    runs-on: ubuntu-latest
+    name: ${{ matrix.name }} - ${{ matrix.environment }}
+    if: ${{ fromJSON(needs.changes.outputs.names) != '[]' }}
+    strategy:
+      max-parallel: 1
+      matrix:
+        name: ${{ fromJSON(needs.changes.outputs.names) }}
+        environment: [dev, prod]
+    defaults:
+      run:
+        working-directory: ${{ matrix.name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: true
+
+      - name: Initialize Terraform
+        run: terraform init --backend-config="env/${{ matrix.environment }}/backend.tfvars"
+
+      - name: Validate Terraform
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="env/${{ matrix.environment }}/terraform.tfvars"
+
+      - name: Execute Terraform Action
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve -var-file="env/${{ matrix.environment }}/terraform.tfvars"

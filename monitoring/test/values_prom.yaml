@@ -1,0 +1,99 @@
+server:
+  persistentVolume:
+    enabled: true
+    storageClass: "gp2"  # Specify your custom StorageClass here. Using the one which was cxreated as part of addon installation
+    size: 10Gi  # Define the storage size you want
+  # Create alert rules
+serverFiles:
+  alerting_rules.yml:
+    groups:
+      - name: Instances   # Name of the alerting group
+        rules:
+          - alert: InstanceDown # Alert name
+            expr: up == 1  # Condition: An instance is down (not responding)
+            for: 10s  # How long the condition must be met before firing
+            labels:
+              severity: critical # Custom label for categorization
+            annotations:
+              description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
+              summary: 'Instance {{ $labels.instance }} down'
+          - alert: PodNotRunning
+            expr: kube_pod_status_phase{phase!="Running"} > 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Pod is not running"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is not running for more than 1 minutes."
+          - alert: PodRestartedMoreThanTwice
+            expr: kube_pod_container_status_restarts_total >= 2
+            for: 1m  # Ensures the condition is true for 5 minutes before firing the alert
+            labels:
+                severity: critical
+            annotations:
+                summary: "Pod {{ $labels.pod }} has restarted more than 2 times"
+                description: "The pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted more than 2 times in the last 5 minutes."
+          - alert: NoAvailableReplicas
+            expr: kube_deployment_status_replicas_available == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "No available replicas for deployment"
+              description: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has no available replicas."
+          - alert: HighCpuUsage
+            expr: (rate(container_cpu_usage_seconds_total[5m]) / kube_pod_container_resource_limits_cpu_cores) > 0.8
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "High CPU usage detected"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is using more than 80% of its allocated CPU."
+alertmanager:
+  extraArgs:
+    cluster.advertise-address: "$(POD_IP):9094"
+  persistence:
+    enabled: true
+    storageClass: "gp2"  # Specify your custom StorageClass here. Using the one which was cxreated as part of addon installation
+    size: 10Gi  # Define the storage size you want
+  config:
+    route:
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      receiver: critical-notifications
+      repeat_interval: 3h
+      routes:
+        - match:
+            severity: critical  # This matches the labels in your alerts
+          receiver: 'critical-notifications'
+    receivers:
+      - name: 'critical-notifications'
+        email_configs:
+          - to: '${DESTINATION_GMAIL_ID}'
+            from: '${SOURCE_GMAIL_ID}'
+            smarthost: 'smtp.gmail.com:587'
+            auth_username: '${SOURCE_GMAIL_ID}'
+            auth_password: '${SOURCE_AUTH_PASSWORD}'
+  
+# this to create alert rules in prometheus
+
+# This section of ingress is not working so I have created the ingress resource using directly yaml file instead of helm chart
+#ingress:
+  #enabled: true
+  #ingressClassName: alb  # Specify ALB as the ingress controller
+  
+  ## Add necessary annotations for ALB
+  #annotations:
+   # alb.ingress.kubernetes.io/scheme: internet-facing  # Use "internal" if private
+   # alb.ingress.kubernetes.io/target-type: ip  # Target type is IP
+   # alb.ingress.kubernetes.io/group.name: prometheus-group  # Optional, groups ALB resources
+   #alb.ingress.kubernetes.io/healthcheck-path: "/"  # Health check path
+   # alb.ingress.kubernetes.io/success-codes: "200,302"  # Success codes for health check
+  
+  ## Define hostnames for the Ingress
+  #hosts:
+    #- host: prometheus.example.com  # Replace with your actual domain
+     #paths:
+     #   - path: /  # Path for the ingress
+      #    pathType: Prefix  # Path type is Prefix
