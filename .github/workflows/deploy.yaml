@@ -79,14 +79,15 @@ jobs:
       - name: Initialize Terraform
         run: |
           pwd
-          terraform init -backend-config="${{ matrix.environment }}/backend.tfvars"
+          ls
+          terraform init -backend-config=${{ matrix.environment }}/backend.tfvars
 
       - name: Validate Terraform
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -var-file="${{ matrix.environment }}/terraform.tfvars"
+        run: terraform plan -var-file=${{ matrix.environment }}/terraform.tfvars
 
       - name: Execute Terraform Action
         if: github.ref == 'refs/heads/main'
-        run: terraform apply -auto-approve -var-file="${{ matrix.environment }}/terraform.tfvars"
+        run: terraform apply -auto-approve -var-file=${{ matrix.environment }}/terraform.tfvars
