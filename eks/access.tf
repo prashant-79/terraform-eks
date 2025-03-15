@@ -44,6 +44,7 @@ resource "aws_iam_group_policy_attachment" "attach_assume_role_policy" {
   policy_arn = aws_iam_policy.eks_assume_role_policy.arn
 }
 
+
 resource "aws_eks_access_entry" "example" {
   cluster_name      = module.eks.cluster_name
   principal_arn     = aws_iam_role.admin_role.arn

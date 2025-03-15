@@ -76,14 +76,14 @@ jobs:
           terraform_wrapper: true
 
       - name: Initialize Terraform
-        run: terraform init --backend-config="env/${{ matrix.environment }}/backend.tfvars"
+        run: terraform init --backend-config="${{matrix.name}/${{ matrix.environment }}/backend.tfvars"
 
       - name: Validate Terraform
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -var-file="env/${{ matrix.environment }}/terraform.tfvars"
+        run: terraform plan -var-file="${{matrix.name}/${{ matrix.environment }}/terraform.tfvars"
 
       - name: Execute Terraform Action
         if: github.ref == 'refs/heads/main'
-        run: terraform apply -auto-approve -var-file="env/${{ matrix.environment }}/terraform.tfvars"
+        run: terraform apply -auto-approve -var-file="${{matrix.name}/${{ matrix.environment }}/terraform.tfvars"
