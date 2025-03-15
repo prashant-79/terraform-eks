@@ -82,3 +82,4 @@ resource "kubectl_manifest" "grafana_ingress" {
     }
   })
 }
+
