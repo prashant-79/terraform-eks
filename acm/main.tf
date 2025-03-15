@@ -14,6 +14,7 @@ resource "aws_acm_certificate" "cert" {
 }
 
 
+
 # Fetch DNS Validation Records from ACM
 resource "aws_route53_record" "cert_validation" {
   for_each = {
