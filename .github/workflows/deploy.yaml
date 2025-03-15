@@ -79,7 +79,7 @@ jobs:
       - name: Initialize Terraform
         run: |
           pwd
-          ls
+          ls -lR 
           terraform init -backend-config=${{ matrix.environment }}/backend.tfvars
 
       - name: Validate Terraform
