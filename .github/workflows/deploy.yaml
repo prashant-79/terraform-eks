@@ -76,7 +76,9 @@ jobs:
           terraform_wrapper: true
 
       - name: Initialize Terraform
-        run: terraform init --backend-config="${{ matrix.environment }}/backend.tfvars"
+        run: |
+          pwd
+          terraform init --backend-config="${{ matrix.environment }}/backend.tfvars"
 
       - name: Validate Terraform
         run: terraform validate
