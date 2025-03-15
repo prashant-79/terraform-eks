@@ -23,10 +23,6 @@ resource "aws_route53_record" "eks_grafana" {
   }
 }
 
-data "aws_lb" "lb" {
-  depends_on = [ kubectl_manifest.prometheus_ingress ]
-  name = "${var.environment}-alb"  
-}
 data "aws_route53_zone" "zone" {
   name = "devops4solutions.com"  # Replace with your domain
 }
