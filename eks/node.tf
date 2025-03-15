@@ -5,6 +5,7 @@ resource "aws_eks_addon" "example" {
   addon_name   = "coredns"
 }
 
+
 module "eks_managed_node_group" {
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
   cluster_service_cidr = module.eks.cluster_service_cidr

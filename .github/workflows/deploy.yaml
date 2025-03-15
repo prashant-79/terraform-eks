@@ -55,7 +55,7 @@ jobs:
       max-parallel: 1
       matrix:
         name: ${{ fromJSON(needs.changes.outputs.names) }}
-        environment: [dev, prod]
+        environment: [dev]
     defaults:
       run:
         working-directory: ${{ matrix.name }}
