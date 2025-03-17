@@ -83,3 +83,24 @@ resource "kubectl_manifest" "grafana_ingress" {
   })
 }
 
+# Wait until the ALB is fully active
+resource "null_resource" "wait_for_alb" {
+  depends_on = [kubectl_manifest.prometheus_ingress]
+
+  provisioner "local-exec" {
+    command = <<EOT
+      echo "Waiting for ALB to become active..."
+      LB_ARN=$(aws elbv2 describe-load-balancers --names "${var.environment}-alb" --query "LoadBalancers[0].LoadBalancerArn" --output text)
+      while [[ "$(aws elbv2 describe-load-balancers --load-balancer-arns $LB_ARN --query "LoadBalancers[0].State.Code" --output text)" != "active" ]]; do
+        echo "Waiting for ALB to be active..."
+        sleep 10
+      done
+      echo "ALB is now active!"
+    EOT
+  }
+
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+}
+

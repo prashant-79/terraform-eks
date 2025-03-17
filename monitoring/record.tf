@@ -24,7 +24,7 @@ resource "aws_route53_record" "eks_grafana" {
 }
 
 data "aws_lb" "lb" {
-  depends_on = [ kubectl_manifest.prometheus_ingress ]
+  depends_on = [ null_resource.wait_for_alb ]
   name = "${var.environment}-alb"  
 }
 data "aws_route53_zone" "zone" {
