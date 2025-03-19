@@ -12,6 +12,7 @@ resource "helm_release" "prometheus" {
   })]
 }
 
+
 resource "helm_release" "grafana" {
   create_namespace = true
   name       = "grafana"
