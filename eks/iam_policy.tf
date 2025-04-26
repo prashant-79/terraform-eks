@@ -136,9 +136,8 @@ resource "aws_iam_policy" "alb_controller_policy" {
             "Effect": "Allow",
             "Action": [
                 "elasticloadbalancing:CreateLoadBalancer",
-                "elasticloadbalancing:CreateTargetGroup",
-                "elasticloadbalancing:SetRulePriorities"
-            ],
+                "elasticloadbalancing:CreateTargetGroup"
+        ],
             "Resource": "*",
             "Condition": {
                 "Null": {
@@ -152,7 +151,8 @@ resource "aws_iam_policy" "alb_controller_policy" {
                 "elasticloadbalancing:CreateListener",
                 "elasticloadbalancing:DeleteListener",
                 "elasticloadbalancing:CreateRule",
-                "elasticloadbalancing:DeleteRule"
+                "elasticloadbalancing:DeleteRule",
+                "elasticloadbalancing:SetRulePriorities"
             ],
             "Resource": "*"
         },
