@@ -136,7 +136,8 @@ resource "aws_iam_policy" "alb_controller_policy" {
             "Effect": "Allow",
             "Action": [
                 "elasticloadbalancing:CreateLoadBalancer",
-                "elasticloadbalancing:CreateTargetGroup"
+                "elasticloadbalancing:CreateTargetGroup",
+                "elasticloadbalancing:SetRulePriorities
             ],
             "Resource": "*",
             "Condition": {
