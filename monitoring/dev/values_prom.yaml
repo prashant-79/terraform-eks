@@ -10,7 +10,7 @@ serverFiles:
       - name: Instances   # Name of the alerting group
         rules:
           - alert: InstanceDown # Alert name
-            expr: up == 1  # Condition: An instance is down (not responding)
+            expr: up == 0  # Condition: An instance is down (not responding)
             for: 10s  # How long the condition must be met before firing
             labels:
               severity: critical # Custom label for categorization
