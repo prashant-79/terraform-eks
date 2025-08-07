@@ -6,3 +6,5 @@ variable "project" {
     default = "eks"
   
 }
+
+#these are variable for vpc
