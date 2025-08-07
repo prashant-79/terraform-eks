@@ -7,5 +7,5 @@ variable "project" {
   
 }
 
-#these are variable for 
+#these are variable 
 
